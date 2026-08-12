@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest an improvement for YT-DLP Manager.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: feature-request
+    attributes:
+      label: Feature or request
+      description: Describe the capability or improvement you would like.
+    validations:
+      required: true
+  - type: textarea
+    id: user-problem
+    attributes:
+      label: User problem it solves
+      description: What is difficult or not possible today?
+    validations:
+      required: true
+  - type: textarea
+    id: desired-experience
+    attributes:
+      label: Desired user experience
+      description: Describe how this should work from a user's perspective.
+    validations:
+      required: true
+  - type: textarea
+    id: examples-context
+    attributes:
+      label: Examples or additional context
+      description: Add mockups, examples, or other useful context.
+    validations:
+      required: false
