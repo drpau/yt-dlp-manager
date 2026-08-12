@@ -93,6 +93,10 @@ updates_key.pem
 *.isorted
 *.stackdump
 
+# Local manager runtime and browser-automation artifacts
+/*.sqlite3
+/.playwright-cli/
+
 # Generated
 AUTHORS
 README.txt
