@@ -22,9 +22,13 @@ def initialize_database(path: str | Path) -> sqlite3.Connection:
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             result_json TEXT,
-            error TEXT
+            error TEXT,
+            progress_json TEXT
         )
     ''')
+    columns = {row['name'] for row in connection.execute('PRAGMA table_info(jobs)')}
+    if 'progress_json' not in columns:
+        connection.execute('ALTER TABLE jobs ADD COLUMN progress_json TEXT')
     connection.execute('CREATE INDEX IF NOT EXISTS jobs_created_at_idx ON jobs (created_at DESC, id ASC)')
     connection.commit()
     return connection

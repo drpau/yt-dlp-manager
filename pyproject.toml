@@ -43,7 +43,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dynamic = ["version"]
-dependencies = []
+dependencies = [
+    "flask>=3.1,<4",
+]
 
 [project.optional-dependencies]
 default = [

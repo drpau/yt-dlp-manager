@@ -5,11 +5,12 @@ from __future__ import annotations
 import json
 import sqlite3
 from collections.abc import Mapping
+from dataclasses import replace
 from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from .models import DownloadRequest, DownloadResult, Job, JobStatus
+from .models import DownloadEvent, DownloadEventType, DownloadRequest, DownloadResult, Job, JobStatus, utc_now
 
 
 class JobRepository:
@@ -18,15 +19,33 @@ class JobRepository:
 
     def add(self, job: Job) -> Job:
         self._connection.execute(
-            '''INSERT INTO jobs (id, url, options_json, status, created_at, updated_at, result_json, error)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+            '''INSERT INTO jobs (id, url, options_json, status, created_at, updated_at, result_json, error, progress_json)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
             (
                 job.id, job.request.url, json.dumps(dict(job.request.options)), job.status.value,
                 job.created_at.isoformat(), job.updated_at.isoformat(), self._result_to_json(job.result), job.error,
+                self._event_to_json(job.progress),
             ),
         )
         self._connection.commit()
         return job
+
+    def update(self, job: Job) -> Job:
+        self._connection.execute(
+            '''UPDATE jobs SET status = ?, updated_at = ?, result_json = ?, error = ?, progress_json = ?
+               WHERE id = ?''',
+            (job.status.value, job.updated_at.isoformat(), self._result_to_json(job.result), job.error,
+             self._event_to_json(job.progress), job.id),
+        )
+        self._connection.commit()
+        return job
+
+    def set_status(self, job: Job, status: JobStatus, *, result: DownloadResult | None = None,
+                   error: str | None = None, progress: DownloadEvent | None = None) -> Job:
+        return self.update(replace(
+            job, status=status, updated_at=utc_now(), result=result if result is not None else job.result,
+            error=error, progress=progress if progress is not None else job.progress,
+        ))
 
     def get(self, job_id: str) -> Job | None:
         row = self._connection.execute('SELECT * FROM jobs WHERE id = ?', (job_id,)).fetchone()
@@ -48,6 +67,21 @@ class JobRepository:
         })
 
     @staticmethod
+    def _event_to_json(event: DownloadEvent | None) -> str | None:
+        if event is None:
+            return None
+        return json.dumps({
+            'type': event.type.value,
+            'downloaded_bytes': event.downloaded_bytes,
+            'total_bytes': event.total_bytes,
+            'percent': event.percent,
+            'speed': event.speed,
+            'eta': event.eta,
+            'output_path': event.output_path,
+            'message': event.message,
+        })
+
+    @staticmethod
     def _job_from_row(row: sqlite3.Row) -> Job:
         result_data = json.loads(row['result_json']) if row['result_json'] else None
         result = DownloadResult(
@@ -56,6 +90,17 @@ class JobRepository:
             title=result_data['title'],
             metadata=result_data['metadata'],
         ) if result_data else None
+        progress_data = json.loads(row['progress_json']) if row['progress_json'] else None
+        progress = DownloadEvent(
+            type=DownloadEventType(progress_data['type']),
+            downloaded_bytes=progress_data.get('downloaded_bytes'),
+            total_bytes=progress_data.get('total_bytes'),
+            percent=progress_data.get('percent'),
+            speed=progress_data.get('speed'),
+            eta=progress_data.get('eta'),
+            output_path=progress_data.get('output_path'),
+            message=progress_data.get('message'),
+        ) if progress_data else None
         return Job(
             id=row['id'],
             request=DownloadRequest(url=row['url'], options=json.loads(row['options_json'])),
@@ -64,6 +109,7 @@ class JobRepository:
             updated_at=datetime.fromisoformat(row['updated_at']),
             result=result,
             error=row['error'],
+            progress=progress,
         )
 
 

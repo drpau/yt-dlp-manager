@@ -22,6 +22,12 @@ class JobStatus(StrEnum):
     CANCELLED = 'cancelled'
 
 
+class CookieSourceKind(StrEnum):
+    NONE = 'none'
+    BROWSER = 'browser'
+    FILE = 'file'
+
+
 class DownloadEventType(StrEnum):
     PROGRESS = 'progress'
     COMPLETED = 'completed'
@@ -32,6 +38,14 @@ class DownloadEventType(StrEnum):
 class DownloadRequest:
     url: str
     options: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class CookieSourcePreference:
+    """Non-sensitive cookie source selection safe to retain with a job."""
+
+    kind: CookieSourceKind = CookieSourceKind.NONE
+    browser: str | None = None
 
 
 @dataclass(frozen=True)
@@ -57,6 +71,26 @@ class DownloadEvent:
 
 
 @dataclass(frozen=True)
+class MediaInfo:
+    title: str
+    thumbnail: str | None = None
+    duration: float | None = None
+    uploader: str | None = None
+    source: str | None = None
+    formats: tuple[MediaFormat, ...] = ()
+
+
+@dataclass(frozen=True)
+class MediaFormat:
+    """A safe, user-selectable yt-dlp format exposed by analysis."""
+
+    id: str
+    label: str
+    mode: str
+    selector: str
+
+
+@dataclass(frozen=True)
 class Job:
     request: DownloadRequest
     id: str = field(default_factory=lambda: str(uuid4()))
@@ -65,3 +99,4 @@ class Job:
     updated_at: datetime = field(default_factory=utc_now)
     result: DownloadResult | None = None
     error: str | None = None
+    progress: DownloadEvent | None = None

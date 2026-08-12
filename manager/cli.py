@@ -25,11 +25,18 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser('list', help='list jobs')
     show_parser = commands.add_parser('show', help='show a job')
     show_parser.add_argument('job_id')
+    web_parser = commands.add_parser('web', help='start the local web interface')
+    web_parser.add_argument('--port', type=int, default=8765)
+    web_parser.add_argument('--download-directory', type=Path, default=Path('downloads'))
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == 'web':
+        from .web import run_web
+        run_web(args.database, args.download_directory, args.port)
+        return 0
     connection = initialize_database(args.database)
     repository = JobRepository(connection)
     try:

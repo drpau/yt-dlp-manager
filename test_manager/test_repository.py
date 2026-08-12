@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from manager.database import initialize_database
-from manager.models import DownloadRequest, DownloadResult, Job, JobStatus
+from manager.models import DownloadEvent, DownloadEventType, DownloadRequest, DownloadResult, Job, JobStatus
 from manager.repository import JobRepository
 
 
@@ -51,5 +51,20 @@ def test_repository_lists_same_timestamp_jobs_by_id(tmp_path):
         repository.add(Job(id='a', request=DownloadRequest('https://example.com/a'), created_at=timestamp, updated_at=timestamp))
 
         assert [job.id for job in repository.list()] == ['a', 'b']
+    finally:
+        connection.close()
+
+
+def test_repository_persists_progress(tmp_path):
+    connection = initialize_database(tmp_path / 'jobs.sqlite3')
+    try:
+        repository = JobRepository(connection)
+        job = repository.add(Job(request=DownloadRequest('https://example.com/video')))
+
+        updated = repository.set_status(job, JobStatus.RUNNING, progress=DownloadEvent(
+            DownloadEventType.PROGRESS, downloaded_bytes=25, total_bytes=100, percent=25,
+        ))
+
+        assert repository.get(job.id) == updated
     finally:
         connection.close()

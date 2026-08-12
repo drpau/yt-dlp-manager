@@ -8,11 +8,13 @@ from typing import Protocol, runtime_checkable
 from .models import DownloadEvent, DownloadRequest, DownloadResult
 
 ProgressCallback = Callable[[DownloadEvent], None]
+CancelCheck = Callable[[], bool]
 
 
 @runtime_checkable
 class DownloadEngine(Protocol):
     """Runs one request without exposing a particular downloader implementation."""
 
-    def download(self, request: DownloadRequest, on_event: ProgressCallback | None = None) -> DownloadResult:
+    def download(self, request: DownloadRequest, on_event: ProgressCallback | None = None,
+                 cancel_check: CancelCheck | None = None) -> DownloadResult:
         """Download *request* and optionally emit normalized events."""
