@@ -22,6 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
+yt-dlp = "yt_dlp:main"
 yt-dlp-manager = "manager.cli:main"
 
 [tool.hatch.build.targets.wheel]

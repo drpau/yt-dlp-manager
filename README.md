@@ -4,6 +4,8 @@ A small, local-first web interface for downloading supported media with the bund
 
 The interface is intentionally bound to `127.0.0.1`; it is not designed as a network service.
 
+The package also installs the full `yt-dlp` command-line interface, so any yt-dlp feature not represented in the manager interface remains available.
+
 ## Requirements
 
 - Python 3.10 or newer
@@ -26,6 +28,13 @@ Downloads are written to `downloads/` and job history is stored in `yt-dlp-manag
 uv run yt-dlp-manager --database data/jobs.sqlite3 web --port 9000 --download-directory D:\Media\Downloads
 ```
 
+## Full yt-dlp CLI
+
+```powershell
+uv run yt-dlp --help
+uv run yt-dlp "https://example.com/video"
+```
+
 ## Command-line queue
 
 ```powershell
@@ -40,7 +49,7 @@ uv run yt-dlp-manager show <job-id>
 uv run pytest
 ```
 
-The project vendors yt-dlp under `yt_dlp/` because the manager invokes its Python API directly. Its runtime modules should be updated as a unit; selectively pruning extractors or helpers can break dynamic imports.
+The project vendors yt-dlp under `yt_dlp/` because the manager invokes its Python API directly and ships its CLI. Its runtime modules should be updated as a unit; selectively pruning extractors or helpers can break dynamic imports. Upstream release, CI, packaging, and test infrastructure is intentionally not included; update the vendored runtime as a single replacement rather than merging upstream repository history.
 
 ## Licence and notices
 
