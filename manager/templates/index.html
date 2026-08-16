@@ -7,80 +7,88 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
   </head>
   <body>
-    <main class="shell">
-      <header class="masthead">
-        <p class="eyebrow">Local media desk</p>
-        <h1>Bring the link.<br>We’ll handle the rest.</h1>
-        <p class="intro">Analyse a supported video link, choose a simple format, and save it locally.</p>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#source-panel" aria-label="YT-DLP Manager home"><span class="brand-mark" aria-hidden="true">↓</span><span>YT-DLP<br>Manager</span></a>
+        <p class="topbar-status"><span></span> Local download desk</p>
       </header>
 
-      <section class="panel start-panel" aria-labelledby="start-heading">
-        <div class="step-label">01 / Source</div>
-        <h2 id="start-heading">What would you like to save?</h2>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="kicker">A better way to save media</p>
+        <h1 id="page-title">Your download,<br><em>your call.</em></h1>
+        <p>Paste a link, review the available formats, then build the download you want—without leaving your browser.</p>
+      </section>
+
+      <section id="source-panel" class="workbench source-panel" aria-labelledby="source-heading">
+        <div class="section-index">01 <span>Source</span></div>
+        <div class="section-heading"><h2 id="source-heading">Bring a link</h2><p>We will inspect it before anything is downloaded.</p></div>
         <form id="analyse-form">
-          <label for="url">Media URL</label>
           <div class="url-row">
-            <input id="url" name="url" type="url" inputmode="url" placeholder="https://…" required autocomplete="url">
-            <button class="primary" type="submit">Analyse <span aria-hidden="true">→</span></button>
+            <label class="sr-only" for="url">Media URL</label>
+            <input id="url" name="url" type="url" inputmode="url" placeholder="Paste a video or audio link" required autocomplete="url">
+            <button class="primary" type="submit">Inspect link <span aria-hidden="true">→</span></button>
           </div>
+
           <fieldset class="access">
-            <legend>Account access <span>Optional</span></legend>
-            <div class="access-options" role="radiogroup">
-              <label><input type="radio" name="cookie_source" value="none" checked><span>No cookies</span></label>
-              <label><input type="radio" name="cookie_source" value="browser"><span>From browser</span></label>
-              <label><input type="radio" name="cookie_source" value="file"><span>cookies.txt (recommended fallback)</span></label>
+            <legend>Access, if the source needs it <small>Optional</small></legend>
+            <p class="field-help">Choose how the manager should access age-restricted or signed-in media.</p>
+            <div class="choice-grid" role="radiogroup" aria-label="Account access">
+              <label class="choice-card"><input type="radio" name="cookie_source" value="none" checked><span class="choice-icon" aria-hidden="true">◎</span><span><strong>Public link</strong><small>No account access</small></span></label>
+              <label class="choice-card"><input type="radio" name="cookie_source" value="browser"><span class="choice-icon" aria-hidden="true">◫</span><span><strong>Use my browser</strong><small>Read local browser cookies</small></span></label>
+              <label class="choice-card"><input type="radio" name="cookie_source" value="file"><span class="choice-icon" aria-hidden="true">↥</span><span><strong>Upload cookies.txt</strong><small>Reliable browser fallback</small></span></label>
             </div>
             <div id="browser-access" class="access-detail" hidden>
-              <label for="browser">Browser</label>
-              <select id="browser" name="browser">
-                <option value="chrome">Chrome (may be unreliable on Windows)</option>
-                <option value="edge">Edge (may be unreliable on Windows)</option>
-                <option value="firefox">Firefox</option>
-                <option value="brave">Brave (may be unreliable on Windows)</option>
-              </select>
-              <p>Firefox is normally reliable. Windows Chromium browsers may keep their cookie database unavailable while running; cookies.txt is the recommended fallback.</p>
+              <label for="browser">Which browser?</label>
+              <select id="browser" name="browser"><option value="chrome">Chrome</option><option value="edge">Edge</option><option value="firefox">Firefox</option><option value="brave">Brave</option></select>
+              <p>Firefox is normally reliable. If a Chromium browser is open, upload a cookies.txt file instead.</p>
             </div>
             <div id="file-access" class="access-detail" hidden>
               <label for="cookie_file">Netscape-format cookies.txt</label>
               <input id="cookie_file" name="cookie_file" type="file" accept=".txt,text/plain">
-              <p>Loaded for this workflow only, then discarded when the download ends.</p>
+              <p>Used only for this workflow, then discarded when the download ends.</p>
             </div>
           </fieldset>
         </form>
         <p id="form-message" class="message" role="alert"></p>
       </section>
 
-      <section id="media-panel" class="panel media-panel" hidden aria-live="polite">
-        <div class="step-label">02 / Format</div>
-        <div class="media-layout">
+      <section id="media-panel" class="workbench media-panel" hidden aria-live="polite" aria-labelledby="format-heading">
+        <div class="section-index">02 <span>Compose</span></div>
+        <div class="media-header">
           <div id="thumbnail-wrap" class="thumbnail-wrap" hidden><img id="thumbnail" alt=""></div>
-          <div class="media-copy">
-            <p id="source" class="source"></p>
-            <h2 id="title"></h2>
-            <p id="details" class="details"></p>
-          </div>
+          <div class="media-copy"><p id="source" class="kicker"></p><h2 id="title"></h2><p id="details" class="details"></p></div>
         </div>
-        <div class="download-controls">
-          <div>
-            <span class="control-label">Save as</span>
-            <div class="segmented" id="mode-control">
-              <button type="button" data-mode="video" class="selected">Video</button>
-              <button type="button" data-mode="audio">Audio</button>
+
+        <div class="composition-grid">
+          <div class="control-stack">
+            <fieldset class="format-type">
+              <legend id="format-heading">What are you saving?</legend>
+              <div class="mode-options" id="mode-control">
+                <label class="mode-card"><input type="radio" name="mode" value="video" checked><span class="mode-icon" aria-hidden="true">▣</span><span><strong>Video</strong><small>Picture and sound</small></span></label>
+                <label class="mode-card"><input type="radio" name="mode" value="audio"><span class="mode-icon" aria-hidden="true">♫</span><span><strong>Audio</strong><small>Sound only</small></span></label>
+              </div>
+            </fieldset>
+            <div class="quality-control">
+              <div class="quality-heading"><label for="quality">Quality</label><output id="quality-output" for="quality">Choose a format</output></div>
+              <input id="quality" type="range" min="0" max="0" value="0" step="1" disabled aria-describedby="quality-help">
+              <div class="quality-scale" aria-hidden="true"><span>Compact</span><span>Best available</span></div>
+              <p id="quality-help" class="field-help">Slide to compare the formats supplied by this source.</p>
             </div>
           </div>
-          <div>
-            <label class="control-label" for="quality">Quality</label>
-            <select id="quality"></select>
-          </div>
-          <button id="download-button" class="primary download-button" type="button">Download <span aria-hidden="true">↓</span></button>
+          <aside class="download-recipe" aria-label="Download preview">
+            <p class="recipe-label">Download preview</p>
+            <div class="recipe-file"><span class="file-glyph" aria-hidden="true">↓</span><div><strong id="recipe-title">Your media</strong><span id="recipe-format">Inspect a link to select a format</span></div></div>
+            <div class="recipe-lines"><span>Source</span><b id="recipe-source">—</b><span>Type</span><b id="recipe-mode">Video</b><span>Destination</span><b>Local downloads</b></div>
+          </aside>
         </div>
+        <div class="download-action"><p>Ready when you are. Your selection will be saved to this device.</p><button id="download-button" class="primary" type="button">Start download <span aria-hidden="true">↓</span></button></div>
       </section>
 
-      <section id="job-panel" class="panel job-panel" hidden aria-live="polite">
-        <div class="step-label">03 / Transfer</div>
-        <div class="job-heading"><h2 id="job-title">Preparing download</h2><span id="status-pill" class="status-pill">Queued</span></div>
+      <section id="job-panel" class="workbench job-panel" hidden aria-live="polite">
+        <div class="section-index">03 <span>Transfer</span></div>
+        <div class="job-heading"><div><p class="kicker">Download in progress</p><h2 id="job-title">Preparing download</h2></div><span id="status-pill" class="status-pill">Queued</span></div>
         <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
-        <div class="job-meta"><span id="progress-text">Waiting to start…</span><button id="cancel-button" type="button" class="text-button">Cancel</button></div>
+        <div class="job-meta"><span id="progress-text">Waiting to start…</span><button id="cancel-button" type="button" class="text-button">Cancel download</button></div>
         <p id="job-message" class="message"></p>
       </section>
     </main>
